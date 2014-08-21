@@ -126,6 +126,17 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, errcb) {
 QRCodeDecoder.prototype.releaseVideo = function() {
   this.stream.stop();
 };
+ 
+ /**
++ * Releases a video stream that was being captured by prepareToVideo
++ */
+QRCodeDecoder.prototype.stop = function() {
+  this.releaseVideo();
+  if (this.tmrCapture) {
+    clearTimeout(this.tmrCapture);
+    delete this.tmrCapture;
+  }
+};
 
 /**
  * Sets the callback for the decode event
