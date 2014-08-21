@@ -3879,15 +3879,7 @@ QRCodeDecoder.prototype._captureToCanvas = function () {
 
   try{
     gCtx.drawImage(this.videoElem, 0, 0,cWidth,cHeight);
-    try{
-      qrcode.decode();
-    }
-    catch(e){
-      console.log(e);
-      this.tmrCapture = setTimeout(function () {
-        scope._captureToCanvas.apply(scope, null);
-      }, 500);
-    }
+    qrcode.decode();
   }
   catch(e){
       console.log(e);
