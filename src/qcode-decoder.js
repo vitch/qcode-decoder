@@ -82,11 +82,21 @@ QRCodeDecoder.prototype.isCanvasSupported = function () {
  * camera's input.
  * @param  {DOMElement} videoElem <video> dom
  * element
+ * @param {String} sourceId     The id of 
+ * the video source you want to use
  * @param  {Function} errcb     callback
  * function to be called in case of error
  */
-QRCodeDecoder.prototype.prepareVideo = function(videoElem, errcb) {
+QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
   var scope = this;
+  var constraints = {video: true, audio: false};
+  if (sourceId) {
+    constraints.video = {
+      optional: [{
+        sourceId: sourceId
+      }]
+    };
+  }
 
   navigator.getUserMedia = navigator.getUserMedia ||
       navigator.webkitGetUserMedia ||
@@ -94,7 +104,7 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, errcb) {
       navigator.msGetUserMedia;
 
   if (navigator.getUserMedia) {
-    navigator.getUserMedia({video:true, audio:false}, function (stream) {
+    navigator.getUserMedia(constraints, function (stream) {
       videoElem.src = window.URL.createObjectURL(stream);
       scope.videoElem = videoElem;
       scope.stream = stream;
@@ -131,6 +141,21 @@ QRCodeDecoder.prototype.stop = function() {
  */
 QRCodeDecoder.prototype.setDecoderCallback = function (cb) {
   qrcode.callback = cb;
+};
+
+/**
+ * Gets a list of all available video sources on the device
+ */
+QRCodeDecoder.prototype.getVideoSources = function(cb) {
+  var sources = [];
+  MediaStreamTrack.getSources(function (sourceInfos) {
+    sourceInfos.forEach(function(sourceInfo) {
+      if (sourceInfo.kind === 'video') {
+        sources.push(sourceInfo);
+      }
+    });
+    cb(sources);
+  });
 };
 
 QRCodeDecoder.prototype.decodeFromSrc = function(src) {
