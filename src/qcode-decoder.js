@@ -97,6 +97,8 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
       }]
     };
   }
+  
+  this.stop();
 
   navigator.getUserMedia = navigator.getUserMedia ||
       navigator.webkitGetUserMedia ||
@@ -122,7 +124,9 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
  * captured by prepareToVideo
  */
 QRCodeDecoder.prototype.releaseVideo = function() {
-  this.stream.stop();
+  if (this.stream) {
+    this.stream.stop();
+  }
 };
  
  /**
