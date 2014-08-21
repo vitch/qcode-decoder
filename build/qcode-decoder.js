@@ -3935,10 +3935,6 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, errcb) {
   } else {
     console.log('Couldn\'t get video from camera');
   }
-
-  setTimeout(function () {
-    scope._captureToCanvas.apply(scope, null);
-  }, 500);
 };
 
 /**
