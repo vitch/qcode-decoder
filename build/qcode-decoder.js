@@ -3867,26 +3867,36 @@ QRCodeDecoder.prototype.prepareCanvas = function (canvasElem, width, height) {
 
 QRCodeDecoder.prototype._captureToCanvas = function () {
   var scope = this;
-  var cWidth = this.canvasElem.width;
-  var cHeight = this.canvasElem.height;
 
   if (this.tmrCapture) {
     clearTimeout(this.tmrCapture);
   }
 
-  var gCtx = this.canvasElem.getContext("2d");
-  gCtx.clearRect(0, 0, cWidth, cHeight);
+  if (!this.videoDimensions && this.videoElem.videoWidth && this.videoElem.videoHeight) {
+    this.videoDimensions = {
+      w: this.videoElem.videoWidth,
+      h: this.videoElem.videoHeight
+    };
+    console.log(this.videoDimensions);
+    this.prepareCanvas(this.canvasElem, this.videoDimensions.w, this.videoDimensions.h);
+  }
 
-  try{
-    gCtx.drawImage(this.videoElem, 0, 0,cWidth,cHeight);
-    qrcode.decode();
+  if (this.videoDimensions) {
+    var gCtx = this.canvasElem.getContext("2d");
+    gCtx.clearRect(0, 0, this.videoElem.videoWidth, this.videoElem.videoHeight);
+
+    try{
+      gCtx.drawImage(this.videoElem, 0, 0,this.videoDimensions.w, this.videoDimensions.h);
+      qrcode.decode();
+      return;
+    }
+    catch(e){
+        console.log(e);
+    }
   }
-  catch(e){
-      console.log(e);
-      this.tmrCapture = setTimeout(function () {
-        scope._captureToCanvas.apply(scope, null);
-      }, 500);
-  }
+  this.tmrCapture = setTimeout(function () {
+    scope._captureToCanvas.apply(scope, null);
+  }, 500);
 };
 
 /**
@@ -3940,6 +3950,7 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
       videoElem.src = window.URL.createObjectURL(stream);
       scope.videoElem = videoElem;
       scope.stream = stream;
+      scope.videoDimensions = false;
       setTimeout(function () {
         scope._captureToCanvas.apply(scope, null);
       }, 500);
