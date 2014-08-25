@@ -156,14 +156,18 @@ QRCodeDecoder.prototype.setDecoderCallback = function (cb) {
  */
 QRCodeDecoder.prototype.getVideoSources = function(cb) {
   var sources = [];
-  MediaStreamTrack.getSources(function (sourceInfos) {
-    sourceInfos.forEach(function(sourceInfo) {
-      if (sourceInfo.kind === 'video') {
-        sources.push(sourceInfo);
-      }
+  if (MediaStreamTrack && MediaStreamTrack.getSources) {
+    MediaStreamTrack.getSources(function (sourceInfos) {
+      sourceInfos.forEach(function(sourceInfo) {
+        if (sourceInfo.kind === 'video') {
+          sources.push(sourceInfo);
+        }
+      });
+      cb(sources);
     });
-    cb(sources);
-  });
+  }
+  console.log('Your browser doesn\'t support MediaStreamTrack.getSources');
+  cb(sources);
 };
 
 QRCodeDecoder.prototype.decodeFromSrc = function(src) {
