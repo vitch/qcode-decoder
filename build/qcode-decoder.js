@@ -3834,6 +3834,7 @@ function QRCodeDataBlockReader(blocks,  version,  numErrorCorrectionCode)
 function QRCodeDecoder () {
   this.tmrCapture = null;
   this.canvasElem = null;
+  this.videoConstraints = {video: true, audio: false};
 }
 
 /**
@@ -3922,21 +3923,11 @@ QRCodeDecoder.prototype.isCanvasSupported = function () {
  * camera's input.
  * @param  {DOMElement} videoElem <video> dom
  * element
- * @param {String} sourceId     The id of 
- * the video source you want to use
  * @param  {Function} errcb     callback
  * function to be called in case of error
  */
-QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
+QRCodeDecoder.prototype.prepareVideo = function(videoElem, errcb) {
   var scope = this;
-  var constraints = {video: true, audio: false};
-  if (sourceId) {
-    constraints.video = {
-      optional: [{
-        sourceId: sourceId
-      }]
-    };
-  }
   
   this.stop();
 
@@ -3946,7 +3937,7 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
       navigator.msGetUserMedia;
 
   if (navigator.getUserMedia) {
-    navigator.getUserMedia(constraints, function (stream) {
+    navigator.getUserMedia(this.videoConstraints, function (stream) {
       videoElem.src = window.URL.createObjectURL(stream);
       scope.videoElem = videoElem;
       scope.stream = stream;
@@ -3959,27 +3950,44 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
     console.log('Couldn\'t get video from camera');
   }
 };
-
-/**
- * Releases a video stream that was being
- * captured by prepareToVideo
- */
-QRCodeDecoder.prototype.releaseVideo = function() {
-  if (this.stream) {
-    this.stream.stop();
-  }
-};
  
  /**
 + * Releases a video stream that was being captured by prepareToVideo
 + */
 QRCodeDecoder.prototype.stop = function() {
-  this.releaseVideo();
+  if (this.stream) {
+    this.stream.stop();
+    delete this.stream;
+  }
   if (this.tmrCapture) {
     clearTimeout(this.tmrCapture);
     delete this.tmrCapture;
   }
 };
+
+
+/**
+ * Sets the sourceId for the camera to use.
+ *
+ * The sourceId can be found using the getVideoSources
+ * function on a browser that supports it (currently
+ * only Chrome).
+ * 
+ * @param {String} sourceId     The id of the video
+ * source you want to use (or false to use the current default)
+ */
+QRCodeDecoder.prototype.setSourceId = function (sourceId) {
+  if (sourceId) {
+    this.videoConstraints.video = {
+      optional: [{
+        sourceId: sourceId
+      }]
+    };
+  } else {
+    this.videoConstraints.video = true;
+  }
+};
+
 
 /**
  * Sets the callback for the decode event
@@ -3993,14 +4001,19 @@ QRCodeDecoder.prototype.setDecoderCallback = function (cb) {
  */
 QRCodeDecoder.prototype.getVideoSources = function(cb) {
   var sources = [];
-  MediaStreamTrack.getSources(function (sourceInfos) {
-    sourceInfos.forEach(function(sourceInfo) {
-      if (sourceInfo.kind === 'video') {
-        sources.push(sourceInfo);
-      }
+  if (MediaStreamTrack && MediaStreamTrack.getSources) {
+    MediaStreamTrack.getSources(function (sourceInfos) {
+      sourceInfos.forEach(function(sourceInfo) {
+        if (sourceInfo.kind === 'video') {
+          sources.push(sourceInfo);
+        }
+      });
+      cb(sources);
     });
+  } else {
+    console.log('Your browser doesn\'t support MediaStreamTrack.getSources');
     cb(sources);
-  });
+  }
 };
 
 QRCodeDecoder.prototype.decodeFromSrc = function(src) {
