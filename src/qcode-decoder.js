@@ -129,22 +129,15 @@ QRCodeDecoder.prototype.prepareVideo = function(videoElem, sourceId, errcb) {
     console.log('Couldn\'t get video from camera');
   }
 };
-
-/**
- * Releases a video stream that was being
- * captured by prepareToVideo
- */
-QRCodeDecoder.prototype.releaseVideo = function() {
-  if (this.stream) {
-    this.stream.stop();
-  }
-};
  
  /**
 + * Releases a video stream that was being captured by prepareToVideo
 + */
 QRCodeDecoder.prototype.stop = function() {
-  this.releaseVideo();
+  if (this.stream) {
+    this.stream.stop();
+    delete this.stream;
+  }
   if (this.tmrCapture) {
     clearTimeout(this.tmrCapture);
     delete this.tmrCapture;
