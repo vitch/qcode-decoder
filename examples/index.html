@@ -7,7 +7,6 @@
 
 	<canvas width="400" height="400" style="display: none"></canvas>
 	<video autoplay></video>
-	<select id="cameraSelect"></select>
 	<button id="reset">Reset</button>
 	<button id="stop" >Stop</button>
 
@@ -27,22 +26,12 @@
 		}
 
 		qr.getVideoSources(function(sources) {
-			var sel = document.getElementById('cameraSelect');
-			sources.forEach(function(source) {
-				var option = document.createElement('option');
-				option.value = source.id;
-				option.text = source.facing || 'default';
-				sel.add(option);
-			});
-			sel.onchange = function() {
-				qr.prepareVideo(document.querySelector('video'), sel.selectedOptions[0].value, errCb);
-			};
-			sel.onchange();
+			qr.prepareVideo(document.querySelector('video'), errCb);
 		});
 
 
 		document.querySelector('#reset').onclick = function () {
-		  document.getElementById('cameraSelect').onchange();
+		  qr.prepareVideo(document.querySelector('video'), errCb);
 		}
 
 		document.querySelector('#stop').onclick = function () {
