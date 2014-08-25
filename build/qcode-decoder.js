@@ -3878,7 +3878,6 @@ QRCodeDecoder.prototype._captureToCanvas = function () {
       w: this.videoElem.videoWidth,
       h: this.videoElem.videoHeight
     };
-    console.log(this.videoDimensions);
     this.prepareCanvas(this.canvasElem, this.videoDimensions.w, this.videoDimensions.h);
   }
 
